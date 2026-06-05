@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histoire des Ordinateurs // HACKER ARCHIVE</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0a0a0f;
+            --bg2: #0d1117;
+            --terminal: #00ff41;
+            --cyan: #00d4ff;
+            --pink: #ff0080;
+            --purple: #9d00ff;
+            --dim: #3a3a4a;
+            --text: #e0e0e0;
+        }
+
+        body {
+            font-family: 'Courier New', 'Consolas', monospace;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Matrix rain background */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: var(--bg);
+        }
+
+        .matrix-bg canvas {
+            opacity: 0.15;
+        }
+
+        /* Scan lines overlay */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.1) 0px,
+                rgba(0, 0, 0, 0.1) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+        }
+
+        /* Glitch effect on header */
+        @keyframes glitch {
+            0%, 90%, 100% { transform: translate(0); filter: hue-rotate(0deg); }
+            91% { transform: translate(-2px, 1px); filter: hue-rotate(90deg); }
+            93% { transform: translate(2px, -1px); filter: hue-rotate(-90deg); }
+            95% { transform: translate(-1px, 2px); }
+        }
+
+        header {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px 20px;
+            position: relative;
+        }
+
+        .header-glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(0, 255, 65, 0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+        }
+
+        .system-label {
+            font-size: 0.8rem;
+            color: var(--cyan);
+            letter-spacing: 4px;
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: fadeSlideIn 0.8s ease forwards 0.2s;
+        }
+
+        h1 {
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--terminal);
+            text-shadow: 0 0 20px var(--terminal), 0 0 40px var(--terminal);
+            margin-bottom: 10px;
+            letter-spacing: -2px;
+            animation: glitch 5s infinite, fadeSlideIn 0.8s ease forwards;
+            position: relative;
+        }
+
+        h1::before,
+        h1::after {
+            content: 'HISTOIRE DES ORDINATEURS';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        h1::before {
+            color: var(--cyan);
+            animation: glitch-1 0.3s infinite;
+            clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+        }
+
+        h1::after {
+            color: var(--pink);
+            animation: glitch-2 0.3s infinite;
+            clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+        }
+
+        @keyframes glitch-1 {
+            0%, 100% { transform: translate(0); }
+            20% { transform: translate(-2px, 0); }
+            40% { transform: translate(2px, 0); }
+        }
+
+        @keyframes glitch-2 {
+            0%, 100% { transform: translate(0); }
+            20% { transform: translate(2px, 0); }
+            40% { transform: translate(-2px, 0); }
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--dim);
+            margin-top: 20px;
+            opacity: 0;
+            animation: fadeSlideIn 0.8s ease forwards 0.4s;
+        }
+
+        .subtitle::before {
+            content: '> ';
+            color: var(--terminal);
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            animation: fadeSlideIn 0.8s ease forwards 0.6s;
+        }
+
+        .scroll-indicator span {
+            color: var(--terminal);
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+        }
+
+        .scroll-arrow {
+            width: 20px;
+            height: 20px;
+            border-right: 2px solid var(--terminal);
+            border-bottom: 2px solid var(--terminal);
+            transform: rotate(45deg);
+            animation: bounce-arrow 1.5s ease-in-out infinite;
+        }
+
+        @keyframes bounce-arrow {
+            0%, 100% { transform: rotate(45deg) translate(0, 0); opacity: 1; }
+            50% { transform: rotate(45deg) translate(5px, 5px); opacity: 0.5; }
+        }
+
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Timeline */
+        .timeline-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 80px 20px;
+            position: relative;
+        }
+
+        .timeline-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, transparent, var(--terminal), var(--cyan), var(--pink), var(--purple), transparent);
+            transform: translateX(-50%);
+        }
+
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: -20px;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            background: var(--bg);
+            border: 2px solid var(--terminal);
+            border-radius: 50%;
+            box-shadow: 0 0 30px var(--terminal), inset 0 0 20px var(--terminal);
+        }
+
+        .era-card {
+            position: relative;
+            width: 45%;
+            background: linear-gradient(135deg, rgba(13, 17, 23, 0.95), rgba(10, 10, 15, 0.98));
+            border: 1px solid rgba(0, 255, 65, 0.2);
+            border-radius: 4px;
+            margin-bottom: 80px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.1), inset 0 0 60px rgba(0, 255, 65, 0.02);
+            opacity: 0;
+            transform: translateY(80px) scale(0.95);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .era-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--terminal), var(--cyan));
+        }
+
+        .era-card.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .era-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: var(--terminal);
+            box-shadow: 0 0 60px rgba(0, 255, 65, 0.3), 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .era-card:hover .card-number,
+        .era-card:hover .era-title {
+            text-shadow: none;
+            filter: brightness(1.3);
+        }
+
+        .era-card:nth-child(odd) { margin-left: 0; }
+        .era-card:nth-child(even) { margin-left: 55%; }
+
+        .era-card:nth-child(2) { border-color: rgba(0, 212, 255, 0.2); }
+        .era-card:nth-child(2)::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--cyan), var(--purple));
+        }
+        .era-card:nth-child(2)::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--cyan), var(--purple)); }
+
+        .era-card:nth-child(3) { border-color: rgba(255, 0, 128, 0.2); }
+        .era-card:nth-child(3)::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--pink), var(--purple)); }
+
+        .era-card:nth-child(4) { border-color: rgba(157, 0, 255, 0.2); }
+        .era-card:nth-child(4)::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--purple), var(--cyan)); }
+
+        .card-inner {
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .era-image {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            filter: grayscale(30%) contrast(1.1);
+            transition: all 0.5s ease;
+        }
+
+        .era-card:hover .era-image {
+            filter: grayscale(0%) contrast(1.2);
+            transform: scale(1.05);
+        }
+
+        .card-content {
+            padding: 25px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .card-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--terminal);
+            text-shadow: 0 0 20px var(--terminal);
+            line-height: 1;
+        }
+
+        .era-card:nth-child(2) .card-number { color: var(--cyan); text-shadow: 0 0 20px var(--cyan); }
+        .era-card:nth-child(3) .card-number { color: var(--pink); text-shadow: 0 0 20px var(--pink); }
+        .era-card:nth-child(4) .card-number { color: var(--purple); text-shadow: 0 0 20px var(--purple); }
+
+        .era-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--terminal);
+        }
+
+        .era-card:nth-child(2) .era-title { color: var(--cyan); }
+        .era-card:nth-child(3) .era-title { color: var(--pink); }
+        .era-card:nth-child(4) .era-title { color: var(--purple); }
+
+        .era-text {
+            font-size: 0.95rem;
+            line-height: 1.8;
+            color: #8a8a9a;
+        }
+
+        .click-hint {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            padding: 12px 16px;
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid rgba(0, 255, 65, 0.2);
+            border-radius: 2px;
+            color: var(--terminal);
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .era-card:nth-child(2) .click-hint { background: rgba(0, 212, 255, 0.05); border-color: rgba(0, 212, 255, 0.2); color: var(--cyan); }
+        .era-card:nth-child(3) .click-hint { background: rgba(255, 0, 128, 0.05); border-color: rgba(255, 0, 128, 0.2); color: var(--pink); }
+        .era-card:nth-child(4) .click-hint { background: rgba(157, 0, 255, 0.05); border-color: rgba(157, 0, 255, 0.2); color: var(--purple); }
+
+        .era-card:hover .click-hint {
+            background: rgba(0, 255, 65, 0.15);
+        }
+
+        .click-hint::before {
+            content: '[';
+        }
+        .click-hint::after {
+            content: ']';
+        }
+
+        /* Lightbox */
+        .lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.97);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .lightbox.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .lightbox-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .lightbox-image {
+            max-width: 100%;
+            max-height: 85vh;
+            border-radius: 4px;
+            border: 2px solid var(--terminal);
+            box-shadow: 0 0 60px rgba(0, 255, 65, 0.3);
+        }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 255, 65, 0.1);
+            border: 1px solid var(--terminal);
+            color: var(--terminal);
+            font-size: 1.5rem;
+            padding: 20px 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .lightbox-nav:hover {
+            background: var(--terminal);
+            color: var(--bg);
+        }
+
+        .lightbox-nav.prev { left: -70px; }
+        .lightbox-nav.next { right: -70px; }
+
+        .lightbox-close {
+            position: absolute;
+            top: -50px;
+            right: 0;
+            background: none;
+            border: none;
+            color: var(--terminal);
+            font-size: 3rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .lightbox-close:hover {
+            transform: scale(1.2);
+            text-shadow: 0 0 20px var(--terminal);
+        }
+
+        .lightbox-counter {
+            position: absolute;
+            top: -45px;
+            left: 0;
+            color: var(--cyan);
+            font-size: 0.9rem;
+        }
+
+        .lightbox-title {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--dim);
+            font-size: 0.9rem;
+        }
+
+        .lightbox-thumbs {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .lightbox-thumb {
+            width: 90px;
+            height: 65px;
+            object-fit: cover;
+            border-radius: 2px;
+            cursor: pointer;
+            opacity: 0.4;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .lightbox-thumb:hover,
+        .lightbox-thumb.active {
+            opacity: 1;
+            border-color: var(--terminal);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px;
+            background: var(--bg2);
+            border-top: 1px solid rgba(0, 255, 65, 0.1);
+            color: var(--dim);
+            font-size: 0.85rem;
+        }
+
+        footer span {
+            color: var(--terminal);
+        }
+
+        /* Glitch text effect for certain elements */
+        @keyframes text-glitch {
+            0%, 100% { opacity: 1; }
+            92% { opacity: 1; transform: translate(0); }
+            93% { opacity: 0.8; transform: translate(3px, -2px); }
+            94% { opacity: 1; transform: translate(-3px, 2px); }
+            95% { opacity: 0.9; transform: translate(2px, 1px); }
+        }
+
+        .glitch-hover:hover {
+            animation: text-glitch 0.5s ease;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            h1::before, h1::after { display: none; }
+            .timeline-line { left: 20px; }
+            .era-card {
+                width: calc(100% - 60px);
+                margin-left: 60px !important;
+            }
+            .lightbox-nav.prev { left: 5px; }
+            .lightbox-nav.next { right: 5px; }
+            .lightbox-nav { padding: 15px 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="matrix-bg"><canvas id="matrix"></canvas></div>
+    <div class="scanlines"></div>
+
+    <header>
+        <div class="header-glow"></div>
+        <p class="system-label">// SYSTEM::HACKER_ARCHIVE_v2.0</p>
+        <h1>HISTOIRE DES<br>ORDINATEURS</h1>
+        <p class="subtitle">Timeline interactive — Cliquez sur une section pour accéder aux archives</p>
+        <div class="scroll-indicator">
+            <span>SCROLL_DOWN</span>
+            <div class="scroll-arrow"></div>
+        </div>
+    </header>
+
+    <main class="timeline-container">
+        <div class="timeline-line"></div>
+
+        <article class="era-card" data-section="1">
+            <div class="card-inner">
+                <img src="/Images/1.jpeg" alt="1940s Computers" class="era-image">
+                <div class="card-content">
+                    <div class="card-header">
+                        <span class="card-number">01</span>
+                        <h2 class="era-title">LES ANNÉES 1940</h2>
+                    </div>
+                    <p class="era-text">Dans les années 1940, ils ont inventé l'ordinateur. Ils avaient des tubes à vide. Ils étaient grands, chauds, et consommaient beaucoup d'énergie.</p>
+                    <div class="click-hint">
+                        ACCÉDER AUX ARCHIVES — 4 FICHIERS
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="era-card" data-section="2">
+            <div class="card-inner">
+                <img src="/Images/2.jpg" alt="1950-60s Computers" class="era-image">
+                <div class="card-content">
+                    <div class="card-header">
+                        <span class="card-number">02</span>
+                        <h2 class="era-title">MILIEU 1950-1960</h2>
+                    </div>
+                    <p class="era-text">Au milieu des années 1950, l'ordinateur est devenu meilleur. Les ordinateurs sont devenus plus petits et plus rapides. Dans les années 1960, on a commencé à utiliser des circuits intégrés.</p>
+                    <div class="click-hint">
+                        ACCÉDER AUX ARCHIVES — 4 FICHIERS
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="era-card" data-section="3">
+            <div class="card-inner">
+                <img src="/Images/3.jpg" alt="Modern Computers" class="era-image">
+                <div class="card-content">
+                    <div class="card-header">
+                        <span class="card-number">03</span>
+                        <h2 class="era-title">AUJOURD'HUI</h2>
+                    </div>
+                    <p class="era-text">Aujourd'hui, nous utilisons les ordinateurs entre nos mains. Ils restent aussi sur nos genoux.</p>
+                    <div class="click-hint">
+                        ACCÉDER AUX ARCHIVES — 4 FICHIERS
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="era-card" data-section="4">
+            <div class="card-inner">
+                <img src="/Images/4.jpg" alt="Future Computers" class="era-image">
+                <div class="card-content">
+                    <div class="card-header">
+                        <span class="card-number">04</span>
+                        <h2 class="era-title">LE FUTUR</h2>
+                    </div>
+                    <p class="era-text">Dans le futur, l'A.I. sera sur nos ordinateurs. Les ordinateurs deviendront plus petits, et ils tiendront tous dans une seule main.</p>
+                    <div class="click-hint">
+                        ACCÉDER AUX ARCHIVES — 5 FICHIERS
+                    </div>
+                </div>
+            </div>
+        </article>
+    </main>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-nav prev" id="prevBtn">&#10094;</button>
+            <img src="" alt="" class="lightbox-image" id="lightboxImage">
+            <button class="lightbox-nav next" id="nextBtn">&#10095;</button>
+            <button class="lightbox-close" id="closeBtn">&times;</button>
+            <div class="lightbox-counter" id="lightboxCounter"></div>
+            <div class="lightbox-title" id="lightboxTitle"></div>
+            <div class="lightbox-thumbs" id="lightboxThumbs"></div>
+        </div>
+    </div>
+
+    <footer>
+        <p>// <span>HACKER_ARCHIVE</span> — Projet Scolaire — 2024</p>
+    </footer>
+
+    <script>
+        // Matrix rain effect
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+
+        for (let i = 0; i < columns; i++) {
+            drops[i] = Math.random() * canvas.height;
+        }
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(10, 10, 15, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#00ff41';
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(text, i * fontSize, drops[i]);
+
+                if (drops[i] > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i] += fontSize;
+            }
+        }
+
+        setInterval(drawMatrix, 50);
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Section image mappings - Section 2 now has 4 images
+        const sectionImages = {
+            1: ['/Images/1.jpeg', '/Images/1b.jpg', '/Images/1c.jpeg', '/Images/1d.jpg'],
+            2: ['/Images/2.jpg', '/Images/2b.jpeg', '/Images/2c.jpg', '/Images/2d.jpeg'],
+            3: ['/Images/3.jpg', '/Images/3b.jpg', '/Images/3c.jpg', '/Images/3d.jpeg'],
+            4: ['/Images/4.jpg', '/Images/4b.png', '/Images/4c.jpg', '/Images/4d.webp', '/Images/4e.jpeg']
+        };
+
+        const sectionTitles = {
+            1: '[ARCHIVE_1940] — Tubes à vide',
+            2: '[ARCHIVE_1960] — Circuits intégrés',
+            3: '[ARCHIVE_MODERNE] — Ère actuelle',
+            4: '[ARCHIVE_FUTUR] — Intelligence artificielle'
+        };
+
+        let currentSection = 1;
+        let currentIndex = 0;
+
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImage = document.getElementById('lightboxImage');
+        const lightboxCounter = document.getElementById('lightboxCounter');
+        const lightboxTitle = document.getElementById('lightboxTitle');
+        const lightboxThumbs = document.getElementById('lightboxThumbs');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const closeBtn = document.getElementById('closeBtn');
+
+        function openLightbox(section) {
+            currentSection = section;
+            currentIndex = 0;
+            const images = sectionImages[section];
+            if (!images || images.length === 0) return;
+            updateLightboxImage();
+            renderThumbs(images);
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function updateLightboxImage() {
+            const images = sectionImages[currentSection];
+            lightboxImage.src = images[currentIndex];
+            lightboxCounter.textContent = `// FILE_${String(currentIndex + 1).padStart(2, '0')}_OF_${String(images.length).padStart(2, '0')}`;
+            lightboxTitle.textContent = sectionTitles[currentSection];
+
+            document.querySelectorAll('.lightbox-thumb').forEach((thumb, i) => {
+                thumb.classList.toggle('active', i === currentIndex);
+            });
+        }
+
+        function renderThumbs(images) {
+            lightboxThumbs.innerHTML = '';
+            images.forEach((src, i) => {
+                const thumb = document.createElement('img');
+                thumb.src = src;
+                thumb.className = 'lightbox-thumb' + (i === 0 ? ' active' : '');
+                thumb.onclick = () => {
+                    currentIndex = i;
+                    updateLightboxImage();
+                };
+                lightboxThumbs.appendChild(thumb);
+            });
+        }
+
+        function navigate(direction) {
+            const images = sectionImages[currentSection];
+            currentIndex = (currentIndex + direction + images.length) % images.length;
+            updateLightboxImage();
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Event listeners
+        document.querySelectorAll('.era-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const section = parseInt(card.dataset.section);
+                openLightbox(section);
+            });
+        });
+
+        prevBtn.addEventListener('click', (e) => { e.stopPropagation(); navigate(-1); });
+        nextBtn.addEventListener('click', (e) => { e.stopPropagation(); navigate(1); });
+        closeBtn.addEventListener('click', closeLightbox);
+
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox) closeLightbox();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (!lightbox.classList.contains('active')) return;
+            if (e.key === 'ArrowLeft') navigate(-1);
+            if (e.key === 'ArrowRight') navigate(1);
+            if (e.key === 'Escape') closeLightbox();
+        });
+
+        // Scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+
+        document.querySelectorAll('.era-card').forEach((card, index) => {
+            card.style.transitionDelay = `${index * 0.1}s`;
+            observer.observe(card);
+        });
+
+        // Parallax effect on scroll
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const headerGlow = document.querySelector('.header-glow');
+            if (headerGlow) {
+                headerGlow.style.transform = `translate(-50%, ${scrolled * 0.3}px)`;
+            }
+        });
+    </script>
+</body>
+</html>
